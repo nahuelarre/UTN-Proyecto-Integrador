@@ -1,29 +1,29 @@
 package ar.itr.utn.goldsgym.usecase;
 
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 import ar.itr.utn.goldsgym.model.dto.AthleteDTO;
 import ar.itr.utn.goldsgym.model.entities.Athlete;
 import ar.itr.utn.goldsgym.model.repositories.AthleteRepository;
-import ar.itr.utn.goldsgym.model.repositories.RoutineRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
-public class MasterUseCaseTest {
+class MasterUseCaseTest {
 
     @Mock
     private AthleteRepository athleteRepository;
 
     @Mock
-    private RoutineRepository routineRepository;
+    private JdbcTemplate jdbcTemplate;
 
     @InjectMocks
     private MasterUseCase masterUseCase;
@@ -35,34 +35,37 @@ public class MasterUseCaseTest {
 
     @Test
     void testGetAllAthletes() {
-        // Preparar datos de prueba
-        Athlete athlete1 = new Athlete(1L, "John Doe", 25, 70.0, 175, LocalDate.of(2023, 1, 1), null, null, true);
-        Athlete athlete2 = new Athlete(2L, "Jane Doe", 30, 65.0, 160, LocalDate.of(2022, 1, 1), null, null, true);
+        Athlete athlete1 = new Athlete(1L, "John Doe", 25, 70.0, 175, null, null, null, true);
+        Athlete athlete2 = new Athlete(2L, "Jane Smith", 30, 65.0, 160, null, null, null, true);
 
         when(athleteRepository.findAll()).thenReturn(Arrays.asList(athlete1, athlete2));
 
-        // Ejecutar método
-        List<AthleteDTO> athleteDTOs = masterUseCase.getAllAthletes();
+        List<AthleteDTO> athletes = masterUseCase.getAllAthletes();
 
-        // Verificar resultados
-        assertNotNull(athleteDTOs);
-        assertEquals(2, athleteDTOs.size());
-        assertEquals("John Doe", athleteDTOs.get(0).getName());
-        assertEquals("Jane Doe", athleteDTOs.get(1).getName());
+        assertEquals(2, athletes.size());
+        assertEquals("John Doe", athletes.get(0).getName());
+        assertEquals("Jane Smith", athletes.get(1).getName());
     }
 
     @Test
     void testGetAthleteById() {
-        // Preparar datos de prueba
-        Athlete athlete = new Athlete(1L, "John Doe", 25, 70.0, 175, LocalDate.of(2023, 1, 1), null, null, true);
+        Athlete athlete = new Athlete(1L, "John Doe", 25, 70.0, 175, null, null, null, true);
 
         when(athleteRepository.findById(1L)).thenReturn(Optional.of(athlete));
 
-        // Ejecutar método
         AthleteDTO athleteDTO = masterUseCase.getAthleteById(1L);
 
-        // Verificar resultados
         assertNotNull(athleteDTO);
         assertEquals("John Doe", athleteDTO.getName());
     }
+
+    @Test
+    void testGetAthleteById_NotFound() {
+        when(athleteRepository.findById(1L)).thenReturn(Optional.empty());
+
+        AthleteDTO athleteDTO = masterUseCase.getAthleteById(1L);
+
+        assertNull(athleteDTO);
+    }
 }
+
